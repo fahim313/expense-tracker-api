@@ -22,7 +22,7 @@ db_dependency = Annotated[Session, Depends(get_db)]
 user_dependency = Annotated[User, Depends(get_current_user)]
 
 
-# CREATE TRANSACTION
+# Create Transaction
 
 
 @router.post("/", response_model=TransactionResponse, status_code=status.HTTP_201_CREATED)
@@ -43,7 +43,7 @@ def create_transaction(transaction_data: TransactionCreate, db: db_dependency, c
     return transaction_model
 
  
-#  READ ALL TRANSACTIONS
+#  Get All Transaction 
 
 @router.get("/", response_model=list[TransactionResponse])
 def get_transactions(db: db_dependency, current_user: user_dependency):
@@ -53,13 +53,10 @@ def get_transactions(db: db_dependency, current_user: user_dependency):
 
     return transactions 
 
-# FILTER TRANSACTIONS
 
+# Filter Transaction
 
-@router.get(
-    "/filter",
-    response_model=list[TransactionResponse]
-)
+@router.get( "/filter",response_model=list[TransactionResponse])
 def filter_transactions(
     db: db_dependency,
     current_user: user_dependency,
@@ -87,6 +84,7 @@ def filter_transactions(
     return query.all()
 
 # Get Transaction By ID 
+
 @router.get("/{transaction_id}", response_model=TransactionResponse)
 def get_transaction(transaction_id: int, db: db_dependency, current_user: user_dependency):
     transaction = db.query(Transaction).filter(
@@ -102,3 +100,53 @@ def get_transaction(transaction_id: int, db: db_dependency, current_user: user_d
 
     return transaction
 
+# Update Transaction 
+
+@router.put("/{transaction_id}", response_model=TransactionResponse)
+def update_transaction(
+    transaction_id: int,
+    transaction_data: TransactionUpdate,
+    db: db_dependency,
+    current_user: user_dependency
+):
+    transaction = db.query(Transaction).filter(
+        Transaction.id == transaction_id,
+        Transaction.owner_id == current_user.id
+    ).first()
+
+    if transaction is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Transaction not found"
+        )
+
+    update_data = transaction_data.model_dump(exclude_unset=True)
+
+    for key, value in update_data.items():
+        setattr(transaction, key, value)
+
+    db.commit()
+    db.refresh(transaction)
+
+    return transaction
+
+
+#  Delete Transaction 
+
+@router.delete("/{transaction_id}")
+def delete_transaction(transaction_id: int, db: db_dependency, current_user: user_dependency):
+    transaction = db.query(Transaction).filter(
+        Transaction.id == transaction_id,
+        Transaction.owner_id == current_user.id
+    ).first()
+
+    if transaction is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Transaction not found"
+        )
+
+    db.delete(transaction)
+    db.commit()
+
+    return {"message": "Transaction deleted successfully"}
