@@ -22,7 +22,7 @@ db_dependency = Annotated[Session, Depends(get_db)]
 user_dependency = Annotated[User, Depends(get_current_user)]
 
 
-# 1. CREATE TRANSACTION
+# CREATE TRANSACTION
 
 
 @router.post("/", response_model=TransactionResponse, status_code=status.HTTP_201_CREATED)
@@ -43,7 +43,7 @@ def create_transaction(transaction_data: TransactionCreate, db: db_dependency, c
     return transaction_model
 
  
-# 2. READ ALL TRANSACTIONS
+#  READ ALL TRANSACTIONS
 
 @router.get("/", response_model=list[TransactionResponse])
 def get_transactions(db: db_dependency, current_user: user_dependency):
@@ -51,4 +51,54 @@ def get_transactions(db: db_dependency, current_user: user_dependency):
         Transaction.owner_id == current_user.id
     ).all()
 
-    return transactions
+    return transactions 
+
+# FILTER TRANSACTIONS
+
+
+@router.get(
+    "/filter",
+    response_model=list[TransactionResponse]
+)
+def filter_transactions(
+    db: db_dependency,
+    current_user: user_dependency,
+    type: Optional[str] = None,
+    category: Optional[str] = None,
+    minimum_amount: Optional[float] = None,
+    maximum_amount: Optional[float] = None
+):
+    query = db.query(Transaction).filter(
+        Transaction.owner_id == current_user.id
+    )
+
+    if type is not None:
+        query = query.filter(Transaction.type == type)
+
+    if category is not None:
+        query = query.filter(Transaction.category == category)
+
+    if minimum_amount is not None:
+        query = query.filter(Transaction.amount >= minimum_amount)
+
+    if maximum_amount is not None:
+        query = query.filter(Transaction.amount <= maximum_amount)
+
+    return query.all()
+
+# Get Transaction By ID 
+@router.get("/{transaction_id}", response_model=TransactionResponse)
+def get_transaction(transaction_id: int, db: db_dependency, current_user: user_dependency):
+    transaction = db.query(Transaction).filter(
+        Transaction.id == transaction_id,
+        Transaction.owner_id == current_user.id
+    ).first()
+
+    if transaction is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Transaction not found"
+        )
+
+    return transaction
+
