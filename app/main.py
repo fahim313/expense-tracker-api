@@ -1,14 +1,16 @@
-from fastapi import FastAPI, Depends, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI
+
 from app.database import engine, Base
 from app import models
-from router import auth
+from app.router import auth
+from app.router import transactions
+
 
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
-app.include_router(auth.router)
 
-@app.get("/")
-def root():
-    return {"message": "Expense Tracker API"}
+app.include_router(auth.router)
+app.include_router(transactions.router)
+
+
