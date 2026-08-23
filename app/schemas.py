@@ -1,7 +1,9 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field 
+from typing import Literal
+from datetime import date as Date 
 
 
-# User schemas
+# User Schemas
 
 class UserCreate(BaseModel):
     username: str = Field(min_length=3, max_length=50)
@@ -13,6 +15,38 @@ class UserResponse(BaseModel):
     id: int
     username: str
     email: EmailStr
+
+    class Config:
+        from_attributes = True
+
+
+
+# Transaction Schemas
+
+class TransactionCreate(BaseModel):
+    title: str
+    amount: float = Field(gt=0)
+    type: Literal["income", "expense"]
+    category: str
+    date: Date
+
+
+class TransactionUpdate(BaseModel):
+    title: str | None = None
+    amount: float | None = Field(default=None, gt=0)
+    type: Literal["income", "expense"] | None = None
+    category: str | None = None
+    date: Date | None = None
+
+
+class TransactionResponse(BaseModel):
+    id: int
+    title: str
+    amount: float
+    type: str
+    category: str
+    date: Date
+    owner_id: int
 
     class Config:
         from_attributes = True
