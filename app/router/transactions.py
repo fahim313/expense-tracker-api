@@ -41,5 +41,14 @@ def create_transaction(transaction_data: TransactionCreate, db: db_dependency, c
     db.refresh(transaction_model)
 
     return transaction_model
+
  
- 
+# 2. READ ALL TRANSACTIONS
+
+@router.get("/", response_model=list[TransactionResponse])
+def get_transactions(db: db_dependency, current_user: user_dependency):
+    transactions = db.query(Transaction).filter(
+        Transaction.owner_id == current_user.id
+    ).all()
+
+    return transactions
