@@ -18,3 +18,13 @@ SessionLocal = sessionmaker(
 )
 # Base class for SQLAlchemy models
 Base = declarative_base()
+
+# DB denpendency function 
+
+def get_db():
+    db = SessionLocal()
+
+    try:
+        yield db
+    finally:
+        db.close()
