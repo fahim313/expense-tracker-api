@@ -3,6 +3,7 @@
 A secure **Personal Expense Tracker REST API** built with FastAPI, PostgreSQL (Supabase), SQLAlchemy, and JWT Authentication.
 
 🚀 **Live API:** https://expense-tracker-api-ovpp.onrender.com
+
 📚 **Swagger Docs:** https://expense-tracker-api-ovpp.onrender.com/docs
 
 ---
