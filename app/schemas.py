@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field 
+from pydantic import BaseModel, EmailStr, Field, ConfigDict
 from typing import Literal
 from datetime import date as Date 
 
@@ -16,8 +16,7 @@ class UserResponse(BaseModel):
     username: str
     email: EmailStr
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 
@@ -48,5 +47,4 @@ class TransactionResponse(BaseModel):
     date: Date
     owner_id: int
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
